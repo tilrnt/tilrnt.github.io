@@ -66,6 +66,52 @@
       
         <li>
           
+          <span class="post-meta">Jan 12, 2018</span>
+          <h3>
+            <a class="post-link" href="/kubernetes/kubectl/2018/01/12/kubectl-kubeconfig.html">Kubectl and KUBECONFIG</a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>While working on a kubernetes based project, I had to set the <strong>$KUBECONFIG</strong> env variable in order to access a private cluster.</p>
+
+<p>Later, I started <strong>minikube</strong> and ran <strong>kubectl config view</strong>. This resulted in all my kubectl calls to the private cluster failing.</p>
+
+<p>The reason is due to the way kubectl config behaves when it detects the <strong>$KUBECONFIG</strong> env variable. According to the docs:</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell">kubectl config <span class="nt">-h</span>
+
+Modify kubeconfig files using subcommands like <span class="s2">"kubectl config set current-context my-context"</span>
+
+The loading order follows these rules:
+
+  1. If the <span class="nt">--kubeconfig</span> flag is <span class="nb">set</span>, <span class="k">then </span>only that file is loaded.  The flag may only be <span class="nb">set </span>once
+and no merging takes place.
+
+  2. If <span class="nv">$KUBECONFIG</span> environment variable is <span class="nb">set</span>, <span class="k">then </span>it is used a list of paths <span class="o">(</span>normal path
+delimitting rules <span class="k">for </span>your system<span class="o">)</span><span class="nb">.</span>  These paths are merged.  When a value is modified, it is
+modified <span class="k">in </span>the file that defines the stanza.  When a value is created, it is created <span class="k">in </span>the first
+file that exists.  If no files <span class="k">in </span>the chain exist, <span class="k">then </span>it creates the last file <span class="k">in </span>the list.
+
+  3. Otherwise, <span class="k">${</span><span class="nv">HOME</span><span class="k">}</span>/.kube/config is used and no merging takes place.</code></pre></figure>
+
+<p>As stated in point 2 above, since my <strong>$KUEBCONFIG</strong> is still present, when I started minikube, it merges the minikube settings into file pointed to by <strong>$KUBECONFIG</strong>, updating it by merging the contents of minikube, and sets minikube as the current context. Which is why all the kubectl calls are going to the minikube cluster only.</p>
+
+<p>As a note to self, I need to remember to</p>
+
+<figure class="highlight"><pre><code class="language-shell" data-lang="shell"><span class="nb">unset</span> <span class="nv">$KUBECONFIG</span></code></pre></figure>
+
+
+          </div>
+          <span>
+            
+              <a href="/categories/kubernetes">kubernetes</a>
+            
+              <a href="/categories/kubectl">kubectl</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">Jan 8, 2018</span>
           <h3>
             <a class="post-link" href="/redhat/linux/2018/01/08/redhat-subscription-renewal.html">Redhat Subscription Renewal</a>
