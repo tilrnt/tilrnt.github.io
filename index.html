@@ -66,6 +66,39 @@
       
         <li>
           
+          <span class="post-meta">Jan 14, 2018</span>
+          <h3>
+            <a class="post-link" href="/go/golang/dep/2018/01/14/dep-ensure-private-repo.html"></a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>When using <code class="highlighter-rouge">dep</code> for vendoring dependencies in a go project, I came across the issue of pulling down a private github repo. <code class="highlighter-rouge">dep ensure -v</code> keeps reporting of an error with the repo.</p>
+
+<p>To overcome this, you can create a <code class="highlighter-rouge">~/.netrc</code> with your credentials to access the private repo. For example, when using github, you first need to create an <code class="highlighter-rouge">Personal Github Token</code> within your <code class="highlighter-rouge">Account Settings</code>. Then create a <code class="highlighter-rouge">~/.netrc</code> file with the following format:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>machine github.com
+    login [GITHUB USERNAME]
+    password [GITHUB TOKEN]
+</code></pre></div></div>
+
+<p>This is also documented in the dep repo:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://github.com/golang/dep/blob/master/docs/FAQ.md#how-do-i-get-dep-to-consume-private-git-repos-using-a-github-token
+</code></pre></div></div>
+
+          </div>
+          <span>
+            
+              <a href="/categories/go">go</a>
+            
+              <a href="/categories/golang">golang</a>
+            
+              <a href="/categories/dep">dep</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">Jan 12, 2018</span>
           <h3>
             <a class="post-link" href="/kubernetes/kubectl/2018/01/12/kubectl-kubeconfig.html">Kubectl and KUBECONFIG</a>
