@@ -66,6 +66,55 @@
       
         <li>
           
+          <span class="post-meta">Feb 14, 2018</span>
+          <h3>
+            <a class="post-link" href="/python/virtualenv/2018/02/14/virtualenv.html">Using virtualenv in python</a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.</p>
+
+<p>To install virtualenv:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install virtualenv
+</code></pre></div></div>
+
+<p>To create an isolated environment based on a specific python version:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>virtualenv -p /usr/bin/python2.7 &lt;path to env&gt;
+</code></pre></div></div>
+
+<p>Without the -p option, virtualenv defaults to the current python version.</p>
+
+<p>To activate the virtualenv:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>source &lt;path to env&gt;/bin/activate
+</code></pre></div></div>
+
+<p>You should see the name of the virtualenv in brackets to the left of the terminal. As an extra step, do python -v to check that the version is the one specified above.</p>
+
+<p>To exit the virtualenv and return to the terminal:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>deactivate
+</code></pre></div></div>
+
+<p>Also install virtualenvwrapper as it provides some useful utility commands to list and create virtualenvs:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install virtualenvwrapper
+</code></pre></div></div>
+
+<p>To list all available virtualenvs, for example:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsvirtualenv
+</code></pre></div></div>
+
+<h2 id="additional-resources">Additional Resources</h2>
+
+          </div>
+          <span>
+            
+              <a href="/categories/python">python</a>
+            
+              <a href="/categories/virtualenv">virtualenv</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">Feb 12, 2018</span>
           <h3>
             <a class="post-link" href="/go/golang/error/2018/02/12/go-pointer-receiver-error.html">golang pointer receiver error</a>
