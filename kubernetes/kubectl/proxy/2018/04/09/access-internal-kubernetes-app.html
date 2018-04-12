@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Category: linux</title>
-  <meta name="description" content="A collection of notes on things I learn on a daily basis.">
+  <title>Using kube-proxy to access deployments</title>
+  <meta name="description" content="When we create a service on k8 cluster, it is often initialized with type of ClusterIP.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="https://tilrnt.github.io/categories/linux/">
+  <link rel="canonical" href="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html">
   <link rel="alternate" type="application/rss+xml" title="Today I Learnt" href="/feed.xml">
   
   
@@ -55,26 +55,39 @@
 
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <h1 class="category">Category: linux</h1>
-<ul class="post-list">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-  <li>
-    
-    <span class="post-meta">Feb 14, 2018</span>
-    <h3>
-      <a class="post-link" href="/redhat/linux/2018/02/14/yum-update-protected-multilib-versions.html">yum update Protected multilib versions</a>
-    </h3>
-  </li>
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Using kube-proxy to access deployments</h1>
+    <p class="post-meta">
+      <time datetime="2018-04-09T01:00:00+01:00" itemprop="datePublished">
+        
+        Apr 9, 2018
+      </time>
+      </p>
+  </header>
 
-  <li>
-    
-    <span class="post-meta">Jan 8, 2018</span>
-    <h3>
-      <a class="post-link" href="/redhat/linux/2018/01/08/redhat-subscription-renewal.html">Redhat Subscription Renewal</a>
-    </h3>
-  </li>
+  <div class="post-content" itemprop="articleBody">
+    <p>When we create a service on k8 cluster, it is often initialized with type of <code class="highlighter-rouge">ClusterIP</code>.</p>
 
-</ul>
+<p>We can still access the service using <code class="highlighter-rouge">kubectl proxy</code>.</p>
+
+<p><code class="highlighter-rouge">kubectl proxy</code> allows one to interact with the API without the need for a Bearer token.</p>
+
+<p>Assuming we have a service called <code class="highlighter-rouge">guestbook</code>, we can access it as below:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl proxy &gt; /dev/null &amp;
+
+KC_PROXY_PID = $!
+
+SERVICE_PREFIX=http://localhost:8001/api/v1/proxy
+
+GUESTBOOK_URL = $SERVICE_PREFIX/namespaces/default/services/guestbook
+</code></pre></div></div>
+
+  </div>
+
+  
+</article>
 
       </div>
     </main>

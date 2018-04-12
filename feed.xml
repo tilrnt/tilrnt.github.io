@@ -1,4 +1,58 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2018-03-23T17:02:54+00:00</updated><id>https://tilrnt.github.io/</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Curated by Chee Yeo - 2018</name></author><entry><title type="html">Using virtualenv in python</title><link href="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html" rel="alternate" type="text/html" title="Using virtualenv in python" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv</id><content type="html" xml:base="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html">&lt;p&gt;When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2018-04-12T11:37:24+01:00</updated><id>https://tilrnt.github.io/</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Curated by Chee Yeo - 2018</name></author><entry><title type="html">Using kube-proxy to access deployments</title><link href="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html" rel="alternate" type="text/html" title="Using kube-proxy to access deployments" /><published>2018-04-09T01:00:00+01:00</published><updated>2018-04-09T01:00:00+01:00</updated><id>https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app</id><content type="html" xml:base="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html">&lt;p&gt;When we create a service on k8 cluster, it is often initialized with type of &lt;code class=&quot;highlighter-rouge&quot;&gt;ClusterIP&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;We can still access the service using &lt;code class=&quot;highlighter-rouge&quot;&gt;kubectl proxy&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;kubectl proxy&lt;/code&gt; allows one to interact with the API without the need for a Bearer token.&lt;/p&gt;
+
+&lt;p&gt;Assuming we have a service called &lt;code class=&quot;highlighter-rouge&quot;&gt;guestbook&lt;/code&gt;, we can access it as below:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl proxy &amp;gt; /dev/null &amp;amp;
+
+KC_PROXY_PID = $!
+
+SERVICE_PREFIX=http://localhost:8001/api/v1/proxy
+
+GUESTBOOK_URL = $SERVICE_PREFIX/namespaces/default/services/guestbook
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">When we create a service on k8 cluster, it is often initialized with type of ClusterIP.</summary></entry><entry><title type="html">yum update Protected multilib versions</title><link href="https://tilrnt.github.io/redhat/linux/2018/02/14/yum-update-protected-multilib-versions.html" rel="alternate" type="text/html" title="yum update Protected multilib versions" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/02/14/yum-update-protected-multilib-versions</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/02/14/yum-update-protected-multilib-versions.html">&lt;p&gt;During a recent &lt;code class=&quot;highlighter-rouge&quot;&gt;yum update&lt;/code&gt;, it failed with multiple lines of&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Error: Protected multilib versions:
+
+iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
+
+( more error lines like above )
+....
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture &lt;code class=&quot;highlighter-rouge&quot;&gt;x86_64&lt;/code&gt; while yum was also instructed to install version “Y” of that same rpm for architecture &lt;code class=&quot;highlighter-rouge&quot;&gt;i686&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
+
+sudo yum clean-all
+
+sudo rm -rf /var/cache/clean
+
+sudo yum update
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;additional-resources&quot;&gt;Additional Resources&lt;/h2&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">During a recent yum update, it failed with multiple lines of</summary></entry><entry><title type="html">Resolving dep ensure conflicts</title><link href="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html" rel="alternate" type="text/html" title="Resolving dep ensure conflicts" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html">&lt;p&gt;Sometimes when collborating on a golang project, it is possible to get dependency conflicts after running&lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The following is an approach I take to resolve them:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Run &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -v&lt;/code&gt; with verbose to debug the issue.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Delete the repo’s Gopkg.lock&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Clear out the ~GOPATH/src/pkg directory&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Re-run &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -v&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">Sometimes when collborating on a golang project, it is possible to get dependency conflicts after runningdep ensure.</summary></entry><entry><title type="html">Using virtualenv in python</title><link href="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html" rel="alternate" type="text/html" title="Using virtualenv in python" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv</id><content type="html" xml:base="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html">&lt;p&gt;When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.&lt;/p&gt;
 
 &lt;p&gt;To install virtualenv:&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pip install virtualenv
