@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>yum update Protected multilib versions</title>
-  <meta name="description" content="During a recent yum update, it failed with multiple lines of">
+  <title>Using journalctl to check hardware / bootup errors</title>
+  <meta name="description" content="While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the journald daemon collects logs from early in the boot pr...">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="https://tilrnt.github.io/redhat/linux/2018/02/14/yum-update-protected-multilib-versions.html">
+  <link rel="canonical" href="https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot.html">
   <link rel="alternate" type="application/rss+xml" title="Today I Learnt" href="/feed.xml">
   
   
@@ -58,43 +58,27 @@
         <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
   <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">yum update Protected multilib versions</h1>
+    <h1 class="post-title" itemprop="name headline">Using journalctl to check hardware / bootup errors</h1>
     <p class="post-meta">
-      <time datetime="2018-02-14T00:00:00+00:00" itemprop="datePublished">
+      <time datetime="2018-05-23T01:00:00+01:00" itemprop="datePublished">
         
-        Feb 14, 2018
+        May 23, 2018
       </time>
       </p>
   </header>
 
   <div class="post-content" itemprop="articleBody">
-    <p>During a recent <code class="highlighter-rouge">yum update</code>, it failed with multiple lines of</p>
+    <p>While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the <code class="highlighter-rouge">journald</code> daemon collects logs from early in the boot process.</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: Protected multilib versions:
-
-iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
-
-( more error lines like above )
-....
-
+<p>One can use <code class="highlighter-rouge">journalctl</code> to view systemd logs for issues:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo journalctl -b -p err
 </code></pre></div></div>
 
-<p>From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture <code class="highlighter-rouge">x86_64</code> while yum was also instructed to install version “Y” of that same rpm for architecture <code class="highlighter-rouge">i686</code>.</p>
+<p>One can then page through the errors list, if any, to resolve any issue.</p>
 
-<p>Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
+<p>More details on how systemd works can be found on <a href="(https://en.wikipedia.org/wiki/Systemd)">Wikipedia</a> and there is
+a <a href="9https://www.digitalocean.com/community/tutorials/how-to-use-journalctl-to-view-and-manipulate-systemd-logs">DigitalOcean tutorial</a>.</p>
 
-sudo yum clean-all
-
-sudo rm -rf /var/cache/clean
-
-sudo yum update
-</code></pre></div></div>
-
-<h2 id="additional-resources">Additional Resources</h2>
-<p><a href="https://access.redhat.com/solutions/2256321">RedHat support ticket</a></p>
-
-<p><a href="https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971">Same Issue from HPE</a></p>
 
   </div>
 

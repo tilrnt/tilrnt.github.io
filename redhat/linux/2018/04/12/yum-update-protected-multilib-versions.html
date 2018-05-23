@@ -6,11 +6,11 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Category: linux</title>
-  <meta name="description" content="A collection of notes on things I learn on a daily basis.">
+  <title>yum update Protected multilib versions</title>
+  <meta name="description" content="During a recent yum update, it failed with multiple lines of">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="https://tilrnt.github.io/categories/linux/">
+  <link rel="canonical" href="https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html">
   <link rel="alternate" type="application/rss+xml" title="Today I Learnt" href="/feed.xml">
   
   
@@ -55,34 +55,52 @@
 
     <main class="page-content" aria-label="Content">
       <div class="wrapper">
-        <h1 class="category">Category: linux</h1>
-<ul class="post-list">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-  <li>
-    
-    <span class="post-meta">May 23, 2018</span>
-    <h3>
-      <a class="post-link" href="/redhat/linux/2018/05/23/journalctl-troubleshoot.html">Using journalctl to check hardware / bootup errors</a>
-    </h3>
-  </li>
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">yum update Protected multilib versions</h1>
+    <p class="post-meta">
+      <time datetime="2018-04-12T01:00:00+01:00" itemprop="datePublished">
+        
+        Apr 12, 2018
+      </time>
+      </p>
+  </header>
 
-  <li>
-    
-    <span class="post-meta">Apr 12, 2018</span>
-    <h3>
-      <a class="post-link" href="/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html">yum update Protected multilib versions</a>
-    </h3>
-  </li>
+  <div class="post-content" itemprop="articleBody">
+    <p>During a recent <code class="highlighter-rouge">yum update</code>, it failed with multiple lines of</p>
 
-  <li>
-    
-    <span class="post-meta">Jan 8, 2018</span>
-    <h3>
-      <a class="post-link" href="/redhat/linux/2018/01/08/redhat-subscription-renewal.html">Redhat Subscription Renewal</a>
-    </h3>
-  </li>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: Protected multilib versions:
 
-</ul>
+iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
+
+( more error lines like above )
+....
+
+</code></pre></div></div>
+
+<p>From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture <code class="highlighter-rouge">x86_64</code> while yum was also instructed to install version “Y” of that same rpm for architecture <code class="highlighter-rouge">i686</code>.</p>
+
+<p>Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
+
+sudo yum clean-all
+
+sudo rm -rf /var/cache/clean
+
+sudo yum update
+</code></pre></div></div>
+
+<h2 id="additional-resources">Additional Resources</h2>
+<p><a href="(https://access.redhat.com/solutions/2256321)">RedHat Support ticket</a></p>
+
+<p><a href="(https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971)">Same Issue from HPE</a></p>
+
+
+  </div>
+
+  
+</article>
 
       </div>
     </main>

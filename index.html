@@ -66,6 +66,81 @@
       
         <li>
           
+          <span class="post-meta">May 23, 2018</span>
+          <h3>
+            <a class="post-link" href="/redhat/linux/2018/05/23/journalctl-troubleshoot.html">Using journalctl to check hardware / bootup errors</a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the <code class="highlighter-rouge">journald</code> daemon collects logs from early in the boot process.</p>
+
+<p>One can use <code class="highlighter-rouge">journalctl</code> to view systemd logs for issues:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo journalctl -b -p err
+</code></pre></div></div>
+
+<p>One can then page through the errors list, if any, to resolve any issue.</p>
+
+<p>More details on how systemd works can be found on <a href="(https://en.wikipedia.org/wiki/Systemd)">Wikipedia</a> and there is
+a <a href="9https://www.digitalocean.com/community/tutorials/how-to-use-journalctl-to-view-and-manipulate-systemd-logs">DigitalOcean tutorial</a>.</p>
+
+
+          </div>
+          <span>
+            
+              <a href="/categories/redhat">redhat</a>
+            
+              <a href="/categories/linux">linux</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
+          <span class="post-meta">Apr 12, 2018</span>
+          <h3>
+            <a class="post-link" href="/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html">yum update Protected multilib versions</a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>During a recent <code class="highlighter-rouge">yum update</code>, it failed with multiple lines of</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: Protected multilib versions:
+
+iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
+
+( more error lines like above )
+....
+
+</code></pre></div></div>
+
+<p>From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture <code class="highlighter-rouge">x86_64</code> while yum was also instructed to install version “Y” of that same rpm for architecture <code class="highlighter-rouge">i686</code>.</p>
+
+<p>Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
+
+sudo yum clean-all
+
+sudo rm -rf /var/cache/clean
+
+sudo yum update
+</code></pre></div></div>
+
+<h2 id="additional-resources">Additional Resources</h2>
+<p><a href="(https://access.redhat.com/solutions/2256321)">RedHat Support ticket</a></p>
+
+<p><a href="(https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971)">Same Issue from HPE</a></p>
+
+
+          </div>
+          <span>
+            
+              <a href="/categories/redhat">redhat</a>
+            
+              <a href="/categories/linux">linux</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">Apr 9, 2018</span>
           <h3>
             <a class="post-link" href="/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html">Using kube-proxy to access deployments</a>
@@ -95,51 +170,6 @@ GUESTBOOK_URL = $SERVICE_PREFIX/namespaces/default/services/guestbook
               <a href="/categories/kubectl">kubectl</a>
             
               <a href="/categories/proxy">proxy</a>
-            
-          </span>
-        </li>
-      
-        <li>
-          
-          <span class="post-meta">Feb 14, 2018</span>
-          <h3>
-            <a class="post-link" href="/redhat/linux/2018/02/14/yum-update-protected-multilib-versions.html">yum update Protected multilib versions</a>
-          </h3>
-          <div class="post-content e-content" itemprop="articleBody">
-            <p>During a recent <code class="highlighter-rouge">yum update</code>, it failed with multiple lines of</p>
-
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: Protected multilib versions:
-
-iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
-
-( more error lines like above )
-....
-
-</code></pre></div></div>
-
-<p>From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture <code class="highlighter-rouge">x86_64</code> while yum was also instructed to install version “Y” of that same rpm for architecture <code class="highlighter-rouge">i686</code>.</p>
-
-<p>Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
-
-sudo yum clean-all
-
-sudo rm -rf /var/cache/clean
-
-sudo yum update
-</code></pre></div></div>
-
-<h2 id="additional-resources">Additional Resources</h2>
-<p><a href="https://access.redhat.com/solutions/2256321">RedHat support ticket</a></p>
-
-<p><a href="https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971">Same Issue from HPE</a></p>
-
-          </div>
-          <span>
-            
-              <a href="/categories/redhat">redhat</a>
-            
-              <a href="/categories/linux">linux</a>
             
           </span>
         </li>
