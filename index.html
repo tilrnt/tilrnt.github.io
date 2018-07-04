@@ -66,6 +66,45 @@
       
         <li>
           
+          <span class="post-meta">Jul 1, 2018</span>
+          <h3>
+            <a class="post-link" href="/golang/dep/2018/07/01/dep-update-reference-error.html">Fixing dep update reference not a tree error </a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>When running <code class="highlighter-rouge">dep ensure -update &lt;dependency&gt; -v</code> to update a depedency,
+one might run into the following error:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Unable to update checked out version: fatal: reference is not a tree:
+</code></pre></div></div>
+
+<p>This is due to the cached version of the dependency in <code class="highlighter-rouge">GOPATH/pkg/dep/sources/&lt;depname&gt;</code> being in <code class="highlighter-rouge">detached HEAD</code> state.</p>
+
+<p>To fix this, cd into the dep cache folder and update it manually:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd GOPATH/pkg/dep/sources/&lt;depname&gt;
+
+git checkout master # or branch specified in Gopkg.toml
+
+git pull
+</code></pre></div></div>
+
+<p>Run <code class="highlighter-rouge">dep ensure -update &lt;dependency&gt;</code> again and it should work again.</p>
+
+<p>This is an open issue on the golang <a href="(https://github.com/golang/dep/issues/484)">dep repository</a>:</p>
+
+
+          </div>
+          <span>
+            
+              <a href="/categories/golang">golang</a>
+            
+              <a href="/categories/dep">dep</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">May 23, 2018</span>
           <h3>
             <a class="post-link" href="/redhat/linux/2018/05/23/journalctl-troubleshoot.html">Using journalctl to check hardware / bootup errors</a>
