@@ -1,4 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2018-07-04T17:12:26+01:00</updated><id>https://tilrnt.github.io/</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Curated by Chee Yeo - 2018</name></author><entry><title type="html">Fixing dep update reference not a tree error</title><link href="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html" rel="alternate" type="text/html" title="Fixing dep update reference not a tree error " /><published>2018-07-01T01:00:00+01:00</published><updated>2018-07-01T01:00:00+01:00</updated><id>https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html">&lt;p&gt;When running &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -update &amp;lt;dependency&amp;gt; -v&lt;/code&gt; to update a depedency,
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2018-07-25T21:24:35+01:00</updated><id>https://tilrnt.github.io/</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Curated by Chee Yeo - 2018</name></author><entry><title type="html">Using Rails ecnrypted credentials in Rails 5.2</title><link href="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html" rel="alternate" type="text/html" title="Using Rails ecnrypted credentials in Rails 5.2" /><published>2018-07-23T01:00:00+01:00</published><updated>2018-07-23T01:00:00+01:00</updated><id>https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials</id><content type="html" xml:base="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html">&lt;p&gt;From Rails 5.2 onwards, there is no longer a &lt;code class=&quot;highlighter-rouge&quot;&gt;config/secrets.yml&lt;/code&gt; file created
+whenever a rails app is created. The default mechanism is to use &lt;code class=&quot;highlighter-rouge&quot;&gt;credentials&lt;/code&gt;
+to unify the management and storage of confidential information.&lt;/p&gt;
+
+&lt;p&gt;Within a new rails 5.2 app, you will see a &lt;code class=&quot;highlighter-rouge&quot;&gt;config/credentials.yml.enc&lt;/code&gt; file
+which is encrypted by default using the &lt;code class=&quot;highlighter-rouge&quot;&gt;config/master.key&lt;/code&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;master.key&lt;/code&gt; file
+is the master key which is used to encrypt/decrypt data stored within the
+&lt;code class=&quot;highlighter-rouge&quot;&gt;credentials.yml.enc&lt;/code&gt; file and as such, it is added to &lt;code class=&quot;highlighter-rouge&quot;&gt;.gitignore&lt;/code&gt; by default.&lt;/p&gt;
+
+&lt;p&gt;To view the contents of the encrypted file, you need to run the following:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:show
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This will display what was the contents of a file such as &lt;code class=&quot;highlighter-rouge&quot;&gt;config/secrets.yml&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Mine contains the following out of the box:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# aws:
+#   access_key_id: 123
+#   secret_access_key: 345
+
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: e86bd7e58727da9b818f0f5a8851e8e2c99679bb9ab0728e6d87fbf31febc26ff8b649dda74e8b5632d16521afb30066254a2e4d6869e2fb57cb93f072b3e0ef
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To edit/add new entries to the file:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:edit
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This will allow you to edit/update the entries within &lt;code class=&quot;highlighter-rouge&quot;&gt;config/credentials.yml.enc&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;You can still use the old YAML syntax to declare variables. For example:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:edit
+
+# Add the following snippet below
+foo:
+  bar: baz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To access any of the data during runtime, we can use &lt;code class=&quot;highlighter-rouge&quot;&gt;Rails.application.credentials&lt;/code&gt;, which returns a &lt;code class=&quot;highlighter-rouge&quot;&gt;ActiveSupport::EncryptedConfiguration&lt;/code&gt; object&lt;/p&gt;
+
+&lt;p&gt;For example, to access the default secret_key_base:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Rails.application.credentials.secret_key_base
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To access nested values, we can use:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Rails.application.credentials.foo[:bar] # =&amp;gt; baz
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">From Rails 5.2 onwards, there is no longer a config/secrets.yml file created whenever a rails app is created. The default mechanism is to use credentials to unify the management and storage of confidential information.</summary></entry><entry><title type="html">Fixing dep update reference not a tree error</title><link href="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html" rel="alternate" type="text/html" title="Fixing dep update reference not a tree error " /><published>2018-07-01T01:00:00+01:00</published><updated>2018-07-01T01:00:00+01:00</updated><id>https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html">&lt;p&gt;When running &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -update &amp;lt;dependency&amp;gt; -v&lt;/code&gt; to update a depedency,
 one might run into the following error:&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Unable to update checked out version: fatal: reference is not a tree:
@@ -186,10 +232,4 @@ file that exists.  If no files &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;t
 
 &lt;p&gt;As a note to self, I need to remember to&lt;/p&gt;
 
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$KUBECONFIG&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">While working on a kubernetes based project, I had to set the $KUBECONFIG env variable in order to access a private cluster.</summary></entry><entry><title type="html">Redhat Subscription Renewal</title><link href="https://tilrnt.github.io/redhat/linux/2018/01/08/redhat-subscription-renewal.html" rel="alternate" type="text/html" title="Redhat Subscription Renewal" /><published>2018-01-08T00:00:00+00:00</published><updated>2018-01-08T00:00:00+00:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/01/08/redhat-subscription-renewal</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/01/08/redhat-subscription-renewal.html">&lt;p&gt;Recently I had to update my Redhat subscription.&lt;/p&gt;
-
-&lt;p&gt;Afterwards, the &lt;strong&gt;subscription-manager&lt;/strong&gt; application kept showing as “No valid subscriptions found”. This was caused by a mismatch between the type of RHEL system I was running and the actual subscription type itself.&lt;/p&gt;
-
-&lt;p&gt;To ensure that one renews to the right subscription type, simply use the following:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /etc/redhat-release&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">Recently I had to update my Redhat subscription.</summary></entry></feed>
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$KUBECONFIG&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">While working on a kubernetes based project, I had to set the $KUBECONFIG env variable in order to access a private cluster.</summary></entry></feed>

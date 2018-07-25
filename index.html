@@ -66,6 +66,73 @@
       
         <li>
           
+          <span class="post-meta">Jul 23, 2018</span>
+          <h3>
+            <a class="post-link" href="/ruby/rails/encryption/2018/07/23/rails-credentials.html">Using Rails ecnrypted credentials in Rails 5.2</a>
+          </h3>
+          <div class="post-content e-content" itemprop="articleBody">
+            <p>From Rails 5.2 onwards, there is no longer a <code class="highlighter-rouge">config/secrets.yml</code> file created
+whenever a rails app is created. The default mechanism is to use <code class="highlighter-rouge">credentials</code>
+to unify the management and storage of confidential information.</p>
+
+<p>Within a new rails 5.2 app, you will see a <code class="highlighter-rouge">config/credentials.yml.enc</code> file
+which is encrypted by default using the <code class="highlighter-rouge">config/master.key</code>. The <code class="highlighter-rouge">master.key</code> file
+is the master key which is used to encrypt/decrypt data stored within the
+<code class="highlighter-rouge">credentials.yml.enc</code> file and as such, it is added to <code class="highlighter-rouge">.gitignore</code> by default.</p>
+
+<p>To view the contents of the encrypted file, you need to run the following:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:show
+</code></pre></div></div>
+
+<p>This will display what was the contents of a file such as <code class="highlighter-rouge">config/secrets.yml</code>.</p>
+
+<p>Mine contains the following out of the box:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># aws:
+#   access_key_id: 123
+#   secret_access_key: 345
+
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: e86bd7e58727da9b818f0f5a8851e8e2c99679bb9ab0728e6d87fbf31febc26ff8b649dda74e8b5632d16521afb30066254a2e4d6869e2fb57cb93f072b3e0ef
+</code></pre></div></div>
+
+<p>To edit/add new entries to the file:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:edit
+</code></pre></div></div>
+
+<p>This will allow you to edit/update the entries within <code class="highlighter-rouge">config/credentials.yml.enc</code></p>
+
+<p>You can still use the old YAML syntax to declare variables. For example:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:edit
+
+# Add the following snippet below
+foo:
+  bar: baz
+</code></pre></div></div>
+
+<p>To access any of the data during runtime, we can use <code class="highlighter-rouge">Rails.application.credentials</code>, which returns a <code class="highlighter-rouge">ActiveSupport::EncryptedConfiguration</code> object</p>
+
+<p>For example, to access the default secret_key_base:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Rails.application.credentials.secret_key_base
+</code></pre></div></div>
+
+<p>To access nested values, we can use:</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Rails.application.credentials.foo[:bar] # =&gt; baz
+</code></pre></div></div>
+
+          </div>
+          <span>
+            
+              <a href="/categories/ruby">ruby</a>
+            
+              <a href="/categories/rails">rails</a>
+            
+              <a href="/categories/encryption">encryption</a>
+            
+          </span>
+        </li>
+      
+        <li>
+          
           <span class="post-meta">Jul 1, 2018</span>
           <h3>
             <a class="post-link" href="/golang/dep/2018/07/01/dep-update-reference-error.html">Fixing dep update reference not a tree error </a>
