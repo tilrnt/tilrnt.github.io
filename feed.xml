@@ -1,235 +1,280 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.6.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2018-07-25T21:24:35+01:00</updated><id>https://tilrnt.github.io/</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Curated by Chee Yeo - 2018</name></author><entry><title type="html">Using Rails ecnrypted credentials in Rails 5.2</title><link href="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html" rel="alternate" type="text/html" title="Using Rails ecnrypted credentials in Rails 5.2" /><published>2018-07-23T01:00:00+01:00</published><updated>2018-07-23T01:00:00+01:00</updated><id>https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials</id><content type="html" xml:base="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html">&lt;p&gt;From Rails 5.2 onwards, there is no longer a &lt;code class=&quot;highlighter-rouge&quot;&gt;config/secrets.yml&lt;/code&gt; file created
-whenever a rails app is created. The default mechanism is to use &lt;code class=&quot;highlighter-rouge&quot;&gt;credentials&lt;/code&gt;
-to unify the management and storage of confidential information.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://tilrnt.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://tilrnt.github.io/" rel="alternate" type="text/html" /><updated>2023-01-29T16:43:19+00:00</updated><id>https://tilrnt.github.io/feed.xml</id><title type="html">Today I Learnt</title><subtitle>A collection of notes on things I learn on a daily basis.</subtitle><author><name>Chee Yeo 2023</name></author><entry><title type="html">Setting up custom learning rate schedulers in TF 2.0</title><link href="https://tilrnt.github.io/machine-learning/tensorflow/tf2.0/2022/05/08/tensorflow-learning-rate-scheduler.html" rel="alternate" type="text/html" title="Setting up custom learning rate schedulers in TF 2.0" /><published>2022-05-08T01:00:00+01:00</published><updated>2022-05-08T01:00:00+01:00</updated><id>https://tilrnt.github.io/machine-learning/tensorflow/tf2.0/2022/05/08/tensorflow-learning-rate-scheduler</id><content type="html" xml:base="https://tilrnt.github.io/machine-learning/tensorflow/tf2.0/2022/05/08/tensorflow-learning-rate-scheduler.html"><![CDATA[<p>In ML training, it is essential to understand and utilize an approach to adjusting the learning rate of a model. It helps with applying regularization to the model to prevent overfitting.</p>
 
-&lt;p&gt;Within a new rails 5.2 app, you will see a &lt;code class=&quot;highlighter-rouge&quot;&gt;config/credentials.yml.enc&lt;/code&gt; file
-which is encrypted by default using the &lt;code class=&quot;highlighter-rouge&quot;&gt;config/master.key&lt;/code&gt;. The &lt;code class=&quot;highlighter-rouge&quot;&gt;master.key&lt;/code&gt; file
+<p><code class="language-plaintext highlighter-rouge">Learning rate decay</code> is an example of a regularization technique which dynamically adjusts the learning rate of a model during its training process. It reduces the learning rate of the model over epochs or steps.</p>
+
+<p>There are 2 main approaches to using learning rate schedulers in TF 2.0:</p>
+
+<ul>
+  <li>
+    <p>Using the callback <code class="language-plaintext highlighter-rouge">LearningRateSchduler</code> and applying your own function</p>
+  </li>
+  <li>
+    <p>Creating a custom subclass of <code class="language-plaintext highlighter-rouge">tf.keras.optimizers.schedules.LearningRateSchedule</code></p>
+  </li>
+</ul>
+
+<p>What is the difference ? The main difference is that approach 1 is meant to be called from the <code class="language-plaintext highlighter-rouge">callbacks</code> kwargs in the <code class="language-plaintext highlighter-rouge">model.fit</code> call whereas the second approach allows you to pass it as an input to the optimizer <code class="language-plaintext highlighter-rouge">learning_rate</code> kwarg.</p>
+
+<h3 id="1-using-the-learningratescheduler-callback">1. Using the LearningRateScheduler callback</h3>
+
+<p>The callback class requires a function of the form:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def my_lr_scheduler(epoch, lr):
+  # custom code to adjust learning rate
+
+  # return new learning rate
+</code></pre></div></div>
+
+<p>The custom function needs to handle 2 parameters: <code class="language-plaintext highlighter-rouge">epoch</code> and <code class="language-plaintext highlighter-rouge">lr</code> (learning rate). This callback will be invoked at the beginning of every epoch, passing in the current epoch and optimizer learning rate. The custom function will need to return the new learning rate value, which the callback uses to update the learning rate of the optimizer</p>
+
+<p>To invoke the example callback above:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">tensorflow.keras.callbacks</span> <span class="kn">import</span> <span class="n">LearningRateScheduler</span>
+<span class="p">...</span>
+
+<span class="n">mymodel</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span>
+	<span class="p">...</span>
+	<span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">LearningRateScheduler</span><span class="p">(</span><span class="n">my_lr_scheduler</span><span class="p">)]</span>
+<span class="p">)</span></code></pre></figure>
+
+<h3 id="2-subclass-the-learningrateschedule-base-class">2. Subclass the LearningRateSchedule base class</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">LearningRateSchedule</code> base class adjusts the learning rate per step / batch of training, rather than over an entire epoch. This is useful if you are training your model in steps rather than epochs. For example, in GAN training</p>
+
+<p>Example of creating a custom LR scheduler class:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">tensorflow.keras.optimizers.schedules</span> <span class="kn">import</span> <span class="n">LearningRateSchedule</span>
+
+<span class="k">class</span> <span class="nc">LinearLRSchedule</span><span class="p">(</span><span class="n">LearningRateSchedule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_learning_rate</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LinearLRSchedule</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">initial_learning_rate</span> <span class="o">=</span> <span class="n">initial_learning_rate</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">max_iters</span> <span class="o">=</span> <span class="n">max_iters</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+        <span class="n">new_lr</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">initial_learning_rate</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">step</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">max_iters</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">new_lr</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s">"initial_learning_rate"</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">initial_learning_rate</span><span class="p">,</span>
+            <span class="s">"max_iters"</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">max_iters</span>
+        <span class="p">}</span></code></pre></figure>
+
+<p>During training, the subclass would be passed directly into the <code class="language-plaintext highlighter-rouge">learning_rate</code> kwargs of an optimizer object:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="n">tf</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">optimizers</span><span class="p">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">LinearLRSchedule</span><span class="p">(</span><span class="mf">1e-1</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span></code></pre></figure>
+
+<h3 id="resources">Resources</h3>
+<p><a href="https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/LearningRateScheduler">LearningRateScheduler Callback</a></p>
+
+<p><a href="https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/schedules/LearningRateSchedule">LearningRateSchedule Class</a></p>]]></content><author><name>Chee Yeo 2023</name></author><category term="machine-learning" /><category term="tensorflow" /><category term="tf2.0" /><summary type="html"><![CDATA[In ML training, it is essential to understand and utilize an approach to adjusting the learning rate of a model. It helps with applying regularization to the model to prevent overfitting.]]></summary></entry><entry><title type="html">Using Rails ecnrypted credentials in Rails 5.2</title><link href="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html" rel="alternate" type="text/html" title="Using Rails ecnrypted credentials in Rails 5.2" /><published>2018-07-23T01:00:00+01:00</published><updated>2018-07-23T01:00:00+01:00</updated><id>https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials</id><content type="html" xml:base="https://tilrnt.github.io/ruby/rails/encryption/2018/07/23/rails-credentials.html"><![CDATA[<p>From Rails 5.2 onwards, there is no longer a <code class="language-plaintext highlighter-rouge">config/secrets.yml</code> file created
+whenever a rails app is created. The default mechanism is to use <code class="language-plaintext highlighter-rouge">credentials</code>
+to unify the management and storage of confidential information.</p>
+
+<p>Within a new rails 5.2 app, you will see a <code class="language-plaintext highlighter-rouge">config/credentials.yml.enc</code> file
+which is encrypted by default using the <code class="language-plaintext highlighter-rouge">config/master.key</code>. The <code class="language-plaintext highlighter-rouge">master.key</code> file
 is the master key which is used to encrypt/decrypt data stored within the
-&lt;code class=&quot;highlighter-rouge&quot;&gt;credentials.yml.enc&lt;/code&gt; file and as such, it is added to &lt;code class=&quot;highlighter-rouge&quot;&gt;.gitignore&lt;/code&gt; by default.&lt;/p&gt;
+<code class="language-plaintext highlighter-rouge">credentials.yml.enc</code> file and as such, it is added to <code class="language-plaintext highlighter-rouge">.gitignore</code> by default.</p>
 
-&lt;p&gt;To view the contents of the encrypted file, you need to run the following:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:show
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>To view the contents of the encrypted file, you need to run the following:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:show
+</code></pre></div></div>
 
-&lt;p&gt;This will display what was the contents of a file such as &lt;code class=&quot;highlighter-rouge&quot;&gt;config/secrets.yml&lt;/code&gt;.&lt;/p&gt;
+<p>This will display what was the contents of a file such as <code class="language-plaintext highlighter-rouge">config/secrets.yml</code>.</p>
 
-&lt;p&gt;Mine contains the following out of the box:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# aws:
+<p>Mine contains the following out of the box:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># aws:
 #   access_key_id: 123
 #   secret_access_key: 345
 
 # Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
 secret_key_base: e86bd7e58727da9b818f0f5a8851e8e2c99679bb9ab0728e6d87fbf31febc26ff8b649dda74e8b5632d16521afb30066254a2e4d6869e2fb57cb93f072b3e0ef
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;To edit/add new entries to the file:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:edit
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>To edit/add new entries to the file:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:edit
+</code></pre></div></div>
 
-&lt;p&gt;This will allow you to edit/update the entries within &lt;code class=&quot;highlighter-rouge&quot;&gt;config/credentials.yml.enc&lt;/code&gt;&lt;/p&gt;
+<p>This will allow you to edit/update the entries within <code class="language-plaintext highlighter-rouge">config/credentials.yml.enc</code></p>
 
-&lt;p&gt;You can still use the old YAML syntax to declare variables. For example:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;EDITOR=&quot;vim&quot; bin/rails credentials:edit
+<p>You can still use the old YAML syntax to declare variables. For example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>EDITOR="vim" bin/rails credentials:edit
 
 # Add the following snippet below
 foo:
   bar: baz
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;To access any of the data during runtime, we can use &lt;code class=&quot;highlighter-rouge&quot;&gt;Rails.application.credentials&lt;/code&gt;, which returns a &lt;code class=&quot;highlighter-rouge&quot;&gt;ActiveSupport::EncryptedConfiguration&lt;/code&gt; object&lt;/p&gt;
+<p>To access any of the data during runtime, we can use <code class="language-plaintext highlighter-rouge">Rails.application.credentials</code>, which returns a <code class="language-plaintext highlighter-rouge">ActiveSupport::EncryptedConfiguration</code> object</p>
 
-&lt;p&gt;For example, to access the default secret_key_base:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Rails.application.credentials.secret_key_base
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>For example, to access the default secret_key_base:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Rails.application.credentials.secret_key_base
+</code></pre></div></div>
 
-&lt;p&gt;To access nested values, we can use:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Rails.application.credentials.foo[:bar] # =&amp;gt; baz
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">From Rails 5.2 onwards, there is no longer a config/secrets.yml file created whenever a rails app is created. The default mechanism is to use credentials to unify the management and storage of confidential information.</summary></entry><entry><title type="html">Fixing dep update reference not a tree error</title><link href="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html" rel="alternate" type="text/html" title="Fixing dep update reference not a tree error " /><published>2018-07-01T01:00:00+01:00</published><updated>2018-07-01T01:00:00+01:00</updated><id>https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html">&lt;p&gt;When running &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -update &amp;lt;dependency&amp;gt; -v&lt;/code&gt; to update a depedency,
-one might run into the following error:&lt;/p&gt;
+<p>To access nested values, we can use:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Rails.application.credentials.foo[:bar] # =&gt; baz
+</code></pre></div></div>]]></content><author><name>Chee Yeo 2023</name></author><category term="ruby" /><category term="rails" /><category term="encryption" /><summary type="html"><![CDATA[From Rails 5.2 onwards, there is no longer a config/secrets.yml file created whenever a rails app is created. The default mechanism is to use credentials to unify the management and storage of confidential information.]]></summary></entry><entry><title type="html">Fixing dep update reference not a tree error</title><link href="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html" rel="alternate" type="text/html" title="Fixing dep update reference not a tree error" /><published>2018-07-01T01:00:00+01:00</published><updated>2018-07-01T01:00:00+01:00</updated><id>https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/07/01/dep-update-reference-error.html"><![CDATA[<p>When running <code class="language-plaintext highlighter-rouge">dep ensure -update &lt;dependency&gt; -v</code> to update a depedency,
+one might run into the following error:</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Unable to update checked out version: fatal: reference is not a tree:
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Unable to update checked out version: fatal: reference is not a tree:
+</code></pre></div></div>
 
-&lt;p&gt;This is due to the cached version of the dependency in &lt;code class=&quot;highlighter-rouge&quot;&gt;GOPATH/pkg/dep/sources/&amp;lt;depname&amp;gt;&lt;/code&gt; being in &lt;code class=&quot;highlighter-rouge&quot;&gt;detached HEAD&lt;/code&gt; state.&lt;/p&gt;
+<p>This is due to the cached version of the dependency in <code class="language-plaintext highlighter-rouge">GOPATH/pkg/dep/sources/&lt;depname&gt;</code> being in <code class="language-plaintext highlighter-rouge">detached HEAD</code> state.</p>
 
-&lt;p&gt;To fix this, cd into the dep cache folder and update it manually:&lt;/p&gt;
+<p>To fix this, cd into the dep cache folder and update it manually:</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cd GOPATH/pkg/dep/sources/&amp;lt;depname&amp;gt;
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd GOPATH/pkg/dep/sources/&lt;depname&gt;
 
 git checkout master # or branch specified in Gopkg.toml
 
 git pull
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;Run &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -update &amp;lt;dependency&amp;gt;&lt;/code&gt; again and it should work again.&lt;/p&gt;
+<p>Run <code class="language-plaintext highlighter-rouge">dep ensure -update &lt;dependency&gt;</code> again and it should work again.</p>
 
-&lt;p&gt;This is an open issue on the golang &lt;a href=&quot;https://github.com/golang/dep/issues/484&quot; target=&quot;_blank&quot;&gt;dep repository&lt;/a&gt;:&lt;/p&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">When running dep ensure -update &amp;lt;dependency&amp;gt; -v to update a depedency, one might run into the following error:</summary></entry><entry><title type="html">Using journalctl to check hardware / bootup errors</title><link href="https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot.html" rel="alternate" type="text/html" title="Using journalctl to check hardware / bootup errors" /><published>2018-05-23T01:00:00+01:00</published><updated>2018-05-23T01:00:00+01:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot.html">&lt;p&gt;While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the &lt;code class=&quot;highlighter-rouge&quot;&gt;journald&lt;/code&gt; daemon collects logs from early in the boot process.&lt;/p&gt;
+<p>This is an open issue on the golang <a href="https://github.com/golang/dep/issues/484" target="_blank">dep repository</a>:</p>]]></content><author><name>Chee Yeo 2023</name></author><category term="golang" /><category term="dep" /><summary type="html"><![CDATA[When running dep ensure -update &lt;dependency&gt; -v to update a depedency, one might run into the following error:]]></summary></entry><entry><title type="html">Using journalctl to check hardware / bootup errors</title><link href="https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot.html" rel="alternate" type="text/html" title="Using journalctl to check hardware / bootup errors" /><published>2018-05-23T01:00:00+01:00</published><updated>2018-05-23T01:00:00+01:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/05/23/journalctl-troubleshoot.html"><![CDATA[<p>While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the <code class="language-plaintext highlighter-rouge">journald</code> daemon collects logs from early in the boot process.</p>
 
-&lt;p&gt;One can use &lt;code class=&quot;highlighter-rouge&quot;&gt;journalctl&lt;/code&gt; to view systemd logs for issues:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo journalctl -b -p err
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>One can use <code class="language-plaintext highlighter-rouge">journalctl</code> to view systemd logs for issues:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo journalctl -b -p err
+</code></pre></div></div>
 
-&lt;p&gt;One can then page through the errors list, if any, to resolve any issue.&lt;/p&gt;
+<p>One can then page through the errors list, if any, to resolve any issue.</p>
 
-&lt;h2 id=&quot;resources&quot;&gt;Resources&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Systemd&quot;&gt;Wikipedia&lt;/a&gt;&lt;/p&gt;
+<h2 id="resources">Resources</h2>
+<p><a href="https://en.wikipedia.org/wiki/Systemd">Wikipedia</a></p>
 
-&lt;p&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-use-journalctl-to-view-and-manipulate-systemd-logs&quot;&gt;DigitalOcean tutorial&lt;/a&gt;&lt;/p&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the journald daemon collects logs from early in the boot process.</summary></entry><entry><title type="html">yum update Protected multilib versions</title><link href="https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html" rel="alternate" type="text/html" title="yum update Protected multilib versions" /><published>2018-04-12T01:00:00+01:00</published><updated>2018-04-12T01:00:00+01:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html">&lt;p&gt;During a recent &lt;code class=&quot;highlighter-rouge&quot;&gt;yum update&lt;/code&gt;, it failed with multiple lines of&lt;/p&gt;
+<p><a href="https://www.digitalocean.com/community/tutorials/how-to-use-journalctl-to-view-and-manipulate-systemd-logs">DigitalOcean tutorial</a></p>]]></content><author><name>Chee Yeo 2023</name></author><category term="redhat" /><category term="linux" /><summary type="html"><![CDATA[While trying to figure out a hardware issue during startup, I discovered that on systemd systems, the journald daemon collects logs from early in the boot process.]]></summary></entry><entry><title type="html">yum update Protected multilib versions</title><link href="https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html" rel="alternate" type="text/html" title="yum update Protected multilib versions" /><published>2018-04-12T01:00:00+01:00</published><updated>2018-04-12T01:00:00+01:00</updated><id>https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions</id><content type="html" xml:base="https://tilrnt.github.io/redhat/linux/2018/04/12/yum-update-protected-multilib-versions.html"><![CDATA[<p>During a recent <code class="language-plaintext highlighter-rouge">yum update</code>, it failed with multiple lines of</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Error: Protected multilib versions:
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Error: Protected multilib versions:
 
 iptables-1.4.21-24.el7.i686 != iptables-1.4.21-23.el7.x86_64
 
 ( more error lines like above )
 ....
 
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture &lt;code class=&quot;highlighter-rouge&quot;&gt;x86_64&lt;/code&gt; while yum was also instructed to install version “Y” of that same rpm for architecture &lt;code class=&quot;highlighter-rouge&quot;&gt;i686&lt;/code&gt;.&lt;/p&gt;
+<p>From above, what the above error means is that for that specific package, version “X” of an RPM is installed for architecture <code class="language-plaintext highlighter-rouge">x86_64</code> while yum was also instructed to install version “Y” of that same rpm for architecture <code class="language-plaintext highlighter-rouge">i686</code>.</p>
 
-&lt;p&gt;Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
+<p>Rather than resolving each depedency manually, I enabled the Workstation Optional RPMs repo to locate the missing rpms and the problem was resolved:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo subscription-manager repos --enable=rhel-7-workstation-optional-rpms
 
 sudo yum clean-all
 
 sudo rm -rf /var/cache/clean
 
 sudo yum update
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;h2 id=&quot;additional-resources&quot;&gt;Additional Resources&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://access.redhat.com/solutions/2256321&quot;&gt;RedHat support ticket&lt;/a&gt;&lt;/p&gt;
+<h2 id="additional-resources">Additional Resources</h2>
+<p><a href="https://access.redhat.com/solutions/2256321">RedHat support ticket</a></p>
 
-&lt;p&gt;&lt;a href=&quot;https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971&quot;&gt;Same Issue from HPE&lt;/a&gt;&lt;/p&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">During a recent yum update, it failed with multiple lines of</summary></entry><entry><title type="html">Using kube-proxy to access deployments</title><link href="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html" rel="alternate" type="text/html" title="Using kube-proxy to access deployments" /><published>2018-04-09T01:00:00+01:00</published><updated>2018-04-09T01:00:00+01:00</updated><id>https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app</id><content type="html" xml:base="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html">&lt;p&gt;When we create a service on k8 cluster, it is often initialized with type of &lt;code class=&quot;highlighter-rouge&quot;&gt;ClusterIP&lt;/code&gt;.&lt;/p&gt;
+<p><a href="https://support.hpe.com/hpsc/doc/public/display?docId=mmr_kc-0131971">Same Issue from HPE</a></p>]]></content><author><name>Chee Yeo 2023</name></author><category term="redhat" /><category term="linux" /><summary type="html"><![CDATA[During a recent yum update, it failed with multiple lines of]]></summary></entry><entry><title type="html">Using kube-proxy to access deployments</title><link href="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html" rel="alternate" type="text/html" title="Using kube-proxy to access deployments" /><published>2018-04-09T01:00:00+01:00</published><updated>2018-04-09T01:00:00+01:00</updated><id>https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app</id><content type="html" xml:base="https://tilrnt.github.io/kubernetes/kubectl/proxy/2018/04/09/access-internal-kubernetes-app.html"><![CDATA[<p>When we create a service on k8 cluster, it is often initialized with type of <code class="language-plaintext highlighter-rouge">ClusterIP</code>.</p>
 
-&lt;p&gt;We can still access the service using &lt;code class=&quot;highlighter-rouge&quot;&gt;kubectl proxy&lt;/code&gt;.&lt;/p&gt;
+<p>We can still access the service using <code class="language-plaintext highlighter-rouge">kubectl proxy</code>.</p>
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;kubectl proxy&lt;/code&gt; allows one to interact with the API without the need for a Bearer token.&lt;/p&gt;
+<p><code class="language-plaintext highlighter-rouge">kubectl proxy</code> allows one to interact with the API without the need for a Bearer token.</p>
 
-&lt;p&gt;Assuming we have a service called &lt;code class=&quot;highlighter-rouge&quot;&gt;guestbook&lt;/code&gt;, we can access it as below:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl proxy &amp;gt; /dev/null &amp;amp;
+<p>Assuming we have a service called <code class="language-plaintext highlighter-rouge">guestbook</code>, we can access it as below:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl proxy &gt; /dev/null &amp;
 
 KC_PROXY_PID = $!
 
 SERVICE_PREFIX=http://localhost:8001/api/v1/proxy
 
 GUESTBOOK_URL = $SERVICE_PREFIX/namespaces/default/services/guestbook
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">When we create a service on k8 cluster, it is often initialized with type of ClusterIP.</summary></entry><entry><title type="html">Resolving dep ensure conflicts</title><link href="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html" rel="alternate" type="text/html" title="Resolving dep ensure conflicts" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html">&lt;p&gt;Sometimes when collborating on a golang project, it is possible to get dependency conflicts after running&lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure&lt;/code&gt;.&lt;/p&gt;
+</code></pre></div></div>]]></content><author><name>Chee Yeo 2023</name></author><category term="kubernetes" /><category term="kubectl" /><category term="proxy" /><summary type="html"><![CDATA[When we create a service on k8 cluster, it is often initialized with type of ClusterIP.]]></summary></entry><entry><title type="html">Using virtualenv in python</title><link href="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html" rel="alternate" type="text/html" title="Using virtualenv in python" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv</id><content type="html" xml:base="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html"><![CDATA[<p>When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.</p>
 
-&lt;p&gt;The following is an approach I take to resolve them:&lt;/p&gt;
+<p>To install virtualenv:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install virtualenv
+</code></pre></div></div>
 
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;Run &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -v&lt;/code&gt; with verbose to debug the issue.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Delete the repo’s Gopkg.lock&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Clear out the ~GOPATH/src/pkg directory&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Re-run &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -v&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">Sometimes when collborating on a golang project, it is possible to get dependency conflicts after runningdep ensure.</summary></entry><entry><title type="html">Using virtualenv in python</title><link href="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html" rel="alternate" type="text/html" title="Using virtualenv in python" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv</id><content type="html" xml:base="https://tilrnt.github.io/python/virtualenv/2018/02/14/virtualenv.html">&lt;p&gt;When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.&lt;/p&gt;
+<p>To create an isolated environment based on a specific python version:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>virtualenv -p /usr/bin/python2.7 &lt;path to env&gt;
+</code></pre></div></div>
 
-&lt;p&gt;To install virtualenv:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pip install virtualenv
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>Without the -p option, virtualenv defaults to the current python version.</p>
 
-&lt;p&gt;To create an isolated environment based on a specific python version:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;virtualenv -p /usr/bin/python2.7 &amp;lt;path to env&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>To activate the virtualenv:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>source &lt;path to env&gt;/bin/activate
+</code></pre></div></div>
 
-&lt;p&gt;Without the -p option, virtualenv defaults to the current python version.&lt;/p&gt;
+<p>You should see the name of the virtualenv in brackets to the left of the terminal. As an extra step, do python -v to check that the version is the one specified above.</p>
 
-&lt;p&gt;To activate the virtualenv:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;source &amp;lt;path to env&amp;gt;/bin/activate
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>To exit the virtualenv and return to the terminal:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>deactivate
+</code></pre></div></div>
 
-&lt;p&gt;You should see the name of the virtualenv in brackets to the left of the terminal. As an extra step, do python -v to check that the version is the one specified above.&lt;/p&gt;
+<p>Also install virtualenvwrapper as it provides some useful utility commands to list and create virtualenvs:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install virtualenvwrapper
+</code></pre></div></div>
 
-&lt;p&gt;To exit the virtualenv and return to the terminal:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;deactivate
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p>To list all available virtualenvs, for example:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lsvirtualenv
+</code></pre></div></div>
 
-&lt;p&gt;Also install virtualenvwrapper as it provides some useful utility commands to list and create virtualenvs:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pip install virtualenvwrapper
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<h2 id="additional-resources">Additional Resources</h2>
+<p><a href="https://virtualenv.pypa.io/en/stable/">virtualenv docs</a></p>
 
-&lt;p&gt;To list all available virtualenvs, for example:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;lsvirtualenv
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+<p><a href="http://virtualenvwrapper.readthedocs.io/en/latest/index.html">virtualenvwrapper docs</a></p>]]></content><author><name>Chee Yeo 2023</name></author><category term="python" /><category term="virtualenv" /><summary type="html"><![CDATA[When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.]]></summary></entry><entry><title type="html">Resolving dep ensure conflicts</title><link href="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html" rel="alternate" type="text/html" title="Resolving dep ensure conflicts" /><published>2018-02-14T00:00:00+00:00</published><updated>2018-02-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts</id><content type="html" xml:base="https://tilrnt.github.io/golang/dep/2018/02/14/dep-ensure-conflicts.html"><![CDATA[<p>Sometimes when collborating on a golang project, it is possible to get dependency conflicts after running<code class="language-plaintext highlighter-rouge">dep ensure</code>.</p>
 
-&lt;h2 id=&quot;additional-resources&quot;&gt;Additional Resources&lt;/h2&gt;
-&lt;p&gt;&lt;a href=&quot;https://virtualenv.pypa.io/en/stable/&quot;&gt;virtualenv docs&lt;/a&gt;&lt;/p&gt;
+<p>The following is an approach I take to resolve them:</p>
 
-&lt;p&gt;&lt;a href=&quot;http://virtualenvwrapper.readthedocs.io/en/latest/index.html&quot;&gt;virtualenvwrapper docs&lt;/a&gt;&lt;/p&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">When working with python, sometimes it is important to create isolated environments due to compatibility issues with the libs being used. Some examples that come to mind is the dependency of pyOpenSSL lib by certbot or setting up a deep learning environment.</summary></entry><entry><title type="html">golang pointer receiver error</title><link href="https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error.html" rel="alternate" type="text/html" title="golang pointer receiver error" /><published>2018-02-12T00:00:00+00:00</published><updated>2018-02-12T00:00:00+00:00</updated><id>https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error</id><content type="html" xml:base="https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error.html">&lt;p&gt;Assuming we have an interface declaration in go as so:&lt;/p&gt;
+<ul>
+  <li>
+    <p>Run <code class="language-plaintext highlighter-rouge">dep ensure -v</code> with verbose to debug the issue.</p>
+  </li>
+  <li>
+    <p>Delete the repo’s Gopkg.lock</p>
+  </li>
+  <li>
+    <p>Clear out the ~GOPATH/src/pkg directory</p>
+  </li>
+  <li>
+    <p>Re-run <code class="language-plaintext highlighter-rouge">dep ensure -v</code></p>
+  </li>
+</ul>]]></content><author><name>Chee Yeo 2023</name></author><category term="golang" /><category term="dep" /><summary type="html"><![CDATA[Sometimes when collborating on a golang project, it is possible to get dependency conflicts after runningdep ensure.]]></summary></entry><entry><title type="html">golang pointer receiver error</title><link href="https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error.html" rel="alternate" type="text/html" title="golang pointer receiver error" /><published>2018-02-12T00:00:00+00:00</published><updated>2018-02-12T00:00:00+00:00</updated><id>https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error</id><content type="html" xml:base="https://tilrnt.github.io/go/golang/error/2018/02/12/go-pointer-receiver-error.html"><![CDATA[<p>Assuming we have an interface declaration in go as so:</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Stringer interface {
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Stringer interface {
   String() string
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;We can create a custom struct to implement the interface like so:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type struct MyStruct{
+</code></pre></div></div>
+<p>We can create a custom struct to implement the interface like so:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type struct MyStruct{
   Value string
 }
 
 func (m *MyStruct) String() string {
   return m.Value
 }
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;If we try to assign a type of MyStruct to the Stringer interface, we will receive an error of __ MyType does not implement Stringer (String method has pointer receiver)__&lt;/p&gt;
+</code></pre></div></div>
+<p>If we try to assign a type of MyStruct to the Stringer interface, we will receive an error of __ MyType does not implement Stringer (String method has pointer receiver)__</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mytype := MyStruct{Value: &quot;test&quot;}
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mytype := MyStruct{Value: "test"}
 
 var s Stringer
 s = m // throws the error above
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;This is because the interface is defined on pointer types of &lt;strong&gt;*MyType&lt;/strong&gt; and not the types of &lt;strong&gt;MyType&lt;/strong&gt;&lt;/p&gt;
+<p>This is because the interface is defined on pointer types of <strong>*MyType</strong> and not the types of <strong>MyType</strong></p>
 
-&lt;p&gt;To fix the error we just need to use the pointer type:&lt;/p&gt;
+<p>To fix the error we just need to use the pointer type:</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;mytype := MyStruct{Value: &quot;test&quot;}
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mytype := MyStruct{Value: "test"}
 
 var s Stringer
-s = &amp;amp;m // no errors
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">Assuming we have an interface declaration in go as so:</summary></entry><entry><title type="html">Vendoring private github repos using dep</title><link href="https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo.html" rel="alternate" type="text/html" title="Vendoring private github repos using dep" /><published>2018-01-14T00:00:00+00:00</published><updated>2018-01-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo</id><content type="html" xml:base="https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo.html">&lt;p&gt;When using &lt;code class=&quot;highlighter-rouge&quot;&gt;dep&lt;/code&gt; for vendoring dependencies in a go project, I came across the issue of pulling down a private github repo. &lt;code class=&quot;highlighter-rouge&quot;&gt;dep ensure -v&lt;/code&gt; keeps reporting of an error with the repo.&lt;/p&gt;
+s = &amp;m // no errors
+</code></pre></div></div>]]></content><author><name>Chee Yeo 2023</name></author><category term="go" /><category term="golang" /><category term="error" /><summary type="html"><![CDATA[Assuming we have an interface declaration in go as so:]]></summary></entry><entry><title type="html">Vendoring private github repos using dep</title><link href="https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo.html" rel="alternate" type="text/html" title="Vendoring private github repos using dep" /><published>2018-01-14T00:00:00+00:00</published><updated>2018-01-14T00:00:00+00:00</updated><id>https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo</id><content type="html" xml:base="https://tilrnt.github.io/go/golang/dep/2018/01/14/dep-ensure-private-repo.html"><![CDATA[<p>When using <code class="language-plaintext highlighter-rouge">dep</code> for vendoring dependencies in a go project, I came across the issue of pulling down a private github repo. <code class="language-plaintext highlighter-rouge">dep ensure -v</code> keeps reporting of an error with the repo.</p>
 
-&lt;p&gt;To overcome this, you can create a &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.netrc&lt;/code&gt; with your credentials to access the private repo. For example, when using github, you first need to create an &lt;code class=&quot;highlighter-rouge&quot;&gt;Personal Github Token&lt;/code&gt; within your &lt;code class=&quot;highlighter-rouge&quot;&gt;Account Settings&lt;/code&gt;. Then create a &lt;code class=&quot;highlighter-rouge&quot;&gt;~/.netrc&lt;/code&gt; file with the following format:&lt;/p&gt;
+<p>To overcome this, you can create a <code class="language-plaintext highlighter-rouge">~/.netrc</code> with your credentials to access the private repo. For example, when using github, you first need to create an <code class="language-plaintext highlighter-rouge">Personal Github Token</code> within your <code class="language-plaintext highlighter-rouge">Account Settings</code>. Then create a <code class="language-plaintext highlighter-rouge">~/.netrc</code> file with the following format:</p>
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;machine github.com
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>machine github.com
     login [GITHUB USERNAME]
     password [GITHUB TOKEN]
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</code></pre></div></div>
 
-&lt;p&gt;This is also documented in the dep repo:&lt;/p&gt;
+<p>This is also documented in the dep repo:</p>
 
-&lt;p&gt;&lt;a href=&quot;https://github.com/golang/dep/blob/master/docs/FAQ.md#how-do-i-get-dep-to-consume-private-git-repos-using-a-github-token&quot;&gt;Private git repos using github token&lt;/a&gt;&lt;/p&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">When using dep for vendoring dependencies in a go project, I came across the issue of pulling down a private github repo. dep ensure -v keeps reporting of an error with the repo.</summary></entry><entry><title type="html">Kubectl and KUBECONFIG</title><link href="https://tilrnt.github.io/kubernetes/kubectl/2018/01/12/kubectl-kubeconfig.html" rel="alternate" type="text/html" title="Kubectl and KUBECONFIG" /><published>2018-01-12T00:00:00+00:00</published><updated>2018-01-12T00:00:00+00:00</updated><id>https://tilrnt.github.io/kubernetes/kubectl/2018/01/12/kubectl-kubeconfig</id><content type="html" xml:base="https://tilrnt.github.io/kubernetes/kubectl/2018/01/12/kubectl-kubeconfig.html">&lt;p&gt;While working on a kubernetes based project, I had to set the &lt;strong&gt;$KUBECONFIG&lt;/strong&gt; env variable in order to access a private cluster.&lt;/p&gt;
-
-&lt;p&gt;Later, I started &lt;strong&gt;minikube&lt;/strong&gt; and ran &lt;strong&gt;kubectl config view&lt;/strong&gt;. This resulted in all my kubectl calls to the private cluster failing.&lt;/p&gt;
-
-&lt;p&gt;The reason is due to the way kubectl config behaves when it detects the &lt;strong&gt;$KUBECONFIG&lt;/strong&gt; env variable. According to the docs:&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;kubectl config &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt;
-
-Modify kubeconfig files using subcommands like &lt;span class=&quot;s2&quot;&gt;&quot;kubectl config set current-context my-context&quot;&lt;/span&gt;
-
-The loading order follows these rules:
-
-  1. If the &lt;span class=&quot;nt&quot;&gt;--kubeconfig&lt;/span&gt; flag is &lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt;, &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;only that file is loaded.  The flag may only be &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;once
-and no merging takes place.
-
-  2. If &lt;span class=&quot;nv&quot;&gt;$KUBECONFIG&lt;/span&gt; environment variable is &lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt;, &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;it is used a list of paths &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;normal path
-delimitting rules &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;your system&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;  These paths are merged.  When a value is modified, it is
-modified &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;the file that defines the stanza.  When a value is created, it is created &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;the first
-file that exists.  If no files &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;the chain exist, &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;it creates the last file &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;the list.
-
-  3. Otherwise, &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;HOME&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/.kube/config is used and no merging takes place.&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
-
-&lt;p&gt;As stated in point 2 above, since my &lt;strong&gt;$KUEBCONFIG&lt;/strong&gt; is still present, when I started minikube, it merges the minikube settings into file pointed to by &lt;strong&gt;$KUBECONFIG&lt;/strong&gt;, updating it by merging the contents of minikube, and sets minikube as the current context. Which is why all the kubectl calls are going to the minikube cluster only.&lt;/p&gt;
-
-&lt;p&gt;As a note to self, I need to remember to&lt;/p&gt;
-
-&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-shell&quot; data-lang=&quot;shell&quot;&gt;&lt;span class=&quot;nb&quot;&gt;unset&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$KUBECONFIG&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;</content><author><name>Curated by Chee Yeo - 2018</name></author><summary type="html">While working on a kubernetes based project, I had to set the $KUBECONFIG env variable in order to access a private cluster.</summary></entry></feed>
+<p><a href="https://github.com/golang/dep/blob/master/docs/FAQ.md#how-do-i-get-dep-to-consume-private-git-repos-using-a-github-token">Private git repos using github token</a></p>]]></content><author><name>Chee Yeo 2023</name></author><category term="go" /><category term="golang" /><category term="dep" /><summary type="html"><![CDATA[When using dep for vendoring dependencies in a go project, I came across the issue of pulling down a private github repo. dep ensure -v keeps reporting of an error with the repo.]]></summary></entry></feed>
