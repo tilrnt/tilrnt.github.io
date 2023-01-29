@@ -6,6 +6,8 @@ on:
     #   - master
     paths:
     - '_posts/**.md'
+    - '**.md'
+  workflow_dispatch:
 
 permissions:
   contents: read
