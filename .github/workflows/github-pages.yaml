@@ -6,6 +6,7 @@ on:
     #   - master
     paths:
     - '_posts/**.md'
+    - '**.md'
 
 permissions:
   contents: read
