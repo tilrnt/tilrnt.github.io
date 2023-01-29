@@ -2,11 +2,8 @@ name: "Deploy to Github Pages"
 
 on:
   push:
-    # branches:
-    #   - master
-    paths:
-    - '_posts/**.md'
-    - '**.md'
+    branches:
+      - master
   workflow_dispatch:
 
 permissions:
