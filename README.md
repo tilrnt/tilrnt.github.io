@@ -28,3 +28,14 @@ bundle exec jekyll build --config _config.yml
 ```
 
 Static html built into `_site` folder.
+
+To trigger the workflow we can either:
+
+* Push to master directly
+
+* Create a blank commit and push:
+  ```
+  git commit --allow-empty -m "Test blank commit"
+
+  git push origin master
+  ```

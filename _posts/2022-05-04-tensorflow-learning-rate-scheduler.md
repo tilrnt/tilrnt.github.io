@@ -22,12 +22,12 @@ What is the difference ? The main difference is that approach 1 is meant to be c
 ### 1. Using the LearningRateScheduler callback
 
 The callback class requires a function of the form:
-```
+{% highlight python %}
 def my_lr_scheduler(epoch, lr):
   # custom code to adjust learning rate
 
   # return new learning rate
-```
+{% endhighlight %}
 
 The custom function needs to handle 2 parameters: `epoch` and `lr` (learning rate). This callback will be invoked at the beginning of every epoch, passing in the current epoch and optimizer learning rate. The custom function will need to return the new learning rate value, which the callback uses to update the learning rate of the optimizer
 
