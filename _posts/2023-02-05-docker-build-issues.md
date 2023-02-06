@@ -17,31 +17,31 @@ It turns out that the docker daemon is unable to use the host networking to do a
 To fix the issue system wide we can create a `/etc/docker/daemons.json` file with the right naemserver entries and restart the docker daemon:
 
 Firstly, run the following to get the host DNS server ip
-```
+{% highlight shell %}
 nmcli dev show | grep 'IP4.DNS'
-```
+{% endhighlight %}
 
 Create a file at `/etc/docker/daemons.json` with the following entries:
-```
+{% highlight shell %}
 {
 	"dns": ["my-nameserver-ip-from-above", "8.8.8.8"]
 }
-```
+{% endhighlight %}
 
 Restart the docker daemon
-```
+{% highlight shell %}
 sudo systemctl restart docker.service
 
 sudo systemctl status docker.service
-```
+{% endhighlight %}
 
 As a test we can run the following image to see if it can do a nslookup of google.com from within a container:
-```
+{% highlight shell %}
 docker run busybox nslookup google.com
-```
+{% endhighlight %}
 
 The response should include the DNS server address from above:
-```
+{% highlight shell %}
 Server:		X.X.X.X
 Address:	X.X.X.X:53
 
@@ -52,7 +52,6 @@ Address: 172.217.16.238
 Non-authoritative answer:
 Name:	google.com
 Address: 2a00:1450:4009:819::200e
-
-```
+{% endhighlight %}
 
 Hope it helps someone!
