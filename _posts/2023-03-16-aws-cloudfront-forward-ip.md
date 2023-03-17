@@ -13,56 +13,52 @@ categories: aws cloudfront terraform
 
 [Add custom headers to origin requests]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/add-origin-custom-headers.html
 
+[HTTP request headers and CloudFront behavior]: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/RequestAndResponseBehaviorCustomOrigin.html#RequestCustomIPAddresses
 
-It's a common to use Cloudfront as a content delivery network to cache assets such as javascript and images. Another possible use case is to route traffic to an Application Load Balancer.
+[Cloudfront Policy blog post]: https://aws.amazon.com/blogs/networking-and-content-delivery/amazon-cloudfront-announces-cache-and-origin-request-policies/
 
-The issue is the origin will receive the IP address of the cloudfront host and not the real IP of the client.
 
-One option is to create a Cloudwatch Function that writes a request header of `true-client-ip`:
-{% highlight javascript %}
-function handler(event) {
-    var request = event.request;
-    var clientIP = event.viewer.ip;
+In a recent project, I was troubleshooting an issue with a cloudfront distribution not passing the right request headers to the origin.
 
-    //Add the true-client-ip header to the incoming request
-    request.headers['true-client-ip'] = {value: clientIP};
+According to [HTTP request headers and CloudFront behavior]:
 
-    return request;
-}
-{% endhighlight %}
+> CloudFront sets the value to the domain name of the origin that is associated with the requested object.
+>
 
-We can attach the function to the cloudfront cache policy.
+For `X-Forwarded-Proto`:
+> CloudFront removes the header.
+>
 
-The issue with the above is the need to maintain an additional dependency.
+By default, Cloudfront will forward the IP of the distribution to the origin and not the real user's IP. In addition it will also remove the `X-Forwarded-Proto` header.
 
-A more manageable solution would be to add custom headers to a cache policy and attach it to the relevant behaviour of the distribution. 
+To resolve the issue we need to add those two headers to the distribution via a custom policy. 
 
-Based on [AWS Cloudfront forward headers] and [Adding Cloudfront request headers] documentation, we managed to implement it in terraform:
+But which policy group do we add it to? Cache policy ? Origin request policy?
+
+To provide some context, recent changes to Cloudfront encourages the use of policies to edit the behaviour of the cache key, requests and response headers.
+
+As per their [Cloudfront Policy blog post], Cache policies are generally used for caching assets. Origin request policies should be used instead to modify the request headers since it is invoked during a cache miss or revalidation. In my use case, I don't want the user's IP to be cached but instead forwarded it to the origin so a origin request policy is more aappropriate.
+
+Since the cloudfront distribution was built using terraform, I was able to create a custom origin request policy and attach it to the distribution.
+
 
 {% highlight terraform %}
-resource "aws_cloudfront_cache_policy" "example" {
-  name        = "example-policy"
-  comment     = "test comment"
-  default_ttl = 50
-  max_ttl     = 100
-  min_ttl     = 1
+resource "aws_cloudfront_origin_request_policy" "example" {
+  name    = "example-policy"
+  comment = "example comment"
+  cookies_config {
+    cookie_behavior = "none"
+  }
 
-  parameters_in_cache_key_and_forwarded_to_origin {
-    cookies_config {
-      cookie_behavior = "none"
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["Host", "Cloudfront-Forwarded-Proto"]
     }
+  }
 
-    # Declare the list of custom headers to forward to the origin
-    headers_config {
-      header_behavior = "whitelist"
-      headers {
-        items = ["Host", "CloudFront-Viewer-Address"]
-      }
-    }
-
-    query_strings_config {
-      query_string_behavior = "none"
-    }
+  query_strings_config {
+    query_string_behavior = "none"
   }
 }
 
@@ -81,7 +77,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   default_cache_behavior {
     ...
 
-    cache_policy_id  = aws_cloudfront_cache_policy.example.id
+
+    origin_request_policy_id  = aws_cloudfront_origin_request_policy.example.id
     path_pattern     = "/*"
   }
   ...
@@ -89,6 +86,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 {% endhighlight %}
 
-We added the `Host` and `Cloudfront-Viewer-Address` headers to the cache policy. The `Cloudfront-Viewer-Address` header contains the IP address of the client and port.
+We added the `Host` and `Cloudfront-Forwarded-Proto` headers to the custom policy. 
 
 In my use case it appends the client IP in the format of `x_forwarded_for: <my ip>` in the origin's logs.
