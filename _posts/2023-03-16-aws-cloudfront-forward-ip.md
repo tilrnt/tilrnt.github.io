@@ -37,7 +37,7 @@ But which policy group do we add it to? Cache policy ? Origin request policy?
 
 To provide some context, recent changes to Cloudfront encourages the use of policies to edit the behaviour of the cache key, requests and response headers.
 
-As per their [Cloudfront Policy blog post], Cache policies are generally used for caching assets. Origin request policies should be used instead to modify the request headers since it is invoked during a cache miss or revalidation. In my use case, I don't want the user's IP to be cached but instead forwarded it to the origin so a origin request policy is more aappropriate.
+As per their [Cloudfront Policy blog post], Cache policies are generally used for caching assets. Origin request policies should be used instead to modify the request headers since it is invoked during a cache miss or revalidation. In my use case, I don't want the user's IP to be cached but instead forwarded it to the origin so a origin request policy is more appropriate.
 
 Since the cloudfront distribution was built using terraform, I was able to create a custom origin request policy and attach it to the distribution.
 
